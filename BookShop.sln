@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookShop.CMD", "BookShop\Bo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookShop.BL", "BookShop.BL\BookShop.BL.csproj", "{1ABEE59A-F183-49C9-B578-D970C06410BD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookShop.BLTests1", "BookShop.BLTests1\BookShop.BLTests1.csproj", "{7B29E986-83A8-41B0-B1B6-695CC7789ED1}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,10 +21,6 @@ Global
 		{1ABEE59A-F183-49C9-B578-D970C06410BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1ABEE59A-F183-49C9-B578-D970C06410BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1ABEE59A-F183-49C9-B578-D970C06410BD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7B29E986-83A8-41B0-B1B6-695CC7789ED1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7B29E986-83A8-41B0-B1B6-695CC7789ED1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7B29E986-83A8-41B0-B1B6-695CC7789ED1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7B29E986-83A8-41B0-B1B6-695CC7789ED1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
