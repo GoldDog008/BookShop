@@ -2,15 +2,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace BookShop.BL.Controller
 {
     public class UserController
     {
-        private User User { get; }
+        protected User User { get; }
         private bool IsNewUser { get; } = false;
-        private Dictionary<Book, int> Cart { get; set; } = new Dictionary<Book, int>();
+        protected Dictionary<Book, int> Cart { get; set; } = new Dictionary<Book, int>();
 
         /// <summary>
         /// Добавление нового пользователя вручную
@@ -83,81 +84,52 @@ namespace BookShop.BL.Controller
             }
         }
 
-
-        public bool ChangeFirstName(string firstName)
+        public bool ChangeUserData(string firstName = null, string lastName = null, string phone = null, Residence residence = null)
         {
-            IsFirstNameValid(firstName);
+            bool isDataChanged = false;
 
             using (BookShopDBContext db = new BookShopDBContext())
             {
                 var user = db.Users.SingleOrDefault(u => u.Id == User.Id);
                 if (user != null)
                 {
-                    User.FirstName = firstName;
-                    user.FirstName = firstName;
-                    db.SaveChanges();
+                    if (firstName != null)
+                    {
+                        IsFirstNameValid(firstName);
+                        User.FirstName = firstName;
+                        user.FirstName = firstName;
+                        isDataChanged = true;
+                    }
+                    if (lastName != null)
+                    {
+                        IsLastNameValid(lastName);
+                        User.LastName = lastName;
+                        user.LastName = lastName;
+                        isDataChanged = true;
+                    }
+                    if (phone != null)
+                    {
+                        IsPhoneValid(phone);
+                        User.Phone = phone;
+                        user.Phone = phone;
+                        isDataChanged = true;
+                    }
+                    if (residence != null)
+                    {
+                        User.Residence = residence;
+                        user.Residence = residence;
+                        isDataChanged = true;
+                    }
 
-                    return true;
+                    if (isDataChanged)
+                    {
+                        db.SaveChanges();
+                    }
+
+                    return isDataChanged;
                 }
                 return false;
-            }
-        }
-        public bool ChangeLastName(string lastName)
-        {
-            IsLastNameValid(lastName);
-
-            using (BookShopDBContext db = new BookShopDBContext())
-            {
-                var user = db.Users.SingleOrDefault(u => u.Id == User.Id);
-                if (user != null)
-                {
-                    User.LastName = lastName;
-                    user.LastName = lastName;
-                    db.SaveChanges();
-
-                    return true;
-                }
-                return false;
-            }
-        }
-        public bool ChangePhone(string phone)
-        {
-            IsPhoneValid(phone);
-
-            using (BookShopDBContext db = new BookShopDBContext())
-            {
-                var user = db.Users.SingleOrDefault(u => u.Id == User.Id);
-                if (user != null)
-                {
-                    User.Phone = phone;
-                    user.Phone = phone;
-                    db.SaveChanges();
-
-                    return true;
-                }
-                return false;
-            }
-        }
-        public bool ChangeResidence(Residence residence)
-        {
-            if (residence == null)
-            {
-                throw new ArgumentNullException("Место жительства не может быть null");
-            }
-
-            using (BookShopDBContext db = new BookShopDBContext())
-            {
-                var user = db.Users.SingleOrDefault(u => u.Id == User.Id);
-                if (user != null)
-                {
-                    User.Residence = residence;
-                    user.Residence = residence;
-                    db.SaveChanges();
-
-                    return true;
-                }
-            }
-            return false;
+            } 
         }
 
         private bool IsFirstNameValid(string firstName)
@@ -237,8 +209,8 @@ namespace BookShop.BL.Controller
                 throw new ArgumentNullException("Номер телефона не может быть null");
             }
 
-            Regex shortPattern = new Regex("[0-9]{10}");
-            Regex longPattern = new Regex("[38]{2}[0-9]{10}");
+            Regex shortPattern = new Regex("[0-9]{10}");        //095 123 45 67
+            Regex longPattern = new Regex("[38]{2}[0-9]{10}");  //38 095 123 45 67
 
             if (!(shortPattern.IsMatch(phone)) || !(longPattern.IsMatch(phone)))
             {
@@ -273,27 +245,6 @@ namespace BookShop.BL.Controller
             return User.ToString();
         }
 
-        public string GetAllUser()
-        {
-            if (User.Role.Name == "Admin")
-            {
-                string usersData = "";
-                using (BookShopDBContext sb = new BookShopDBContext())
-                {
-                    var users = sb.Users.ToList();
-                    foreach (var user in users)
-                    {
-                        usersData += user.ToString() + '\n';
-                    }
-                }
-                return usersData;
-            }
-            else 
-            {
-                throw new InvalidOperationException("Чтобы получить список пользователей нужно обладать правами админа");
-            }
-        }
-
         public void AddToCart(Book book, int count)
         {
             if (book == null)
@@ -325,6 +276,10 @@ namespace BookShop.BL.Controller
                     }
                 }
             }
+        }
+        public bool IsAdmin()
+        {
+            return User.RoleId == 2;
         }
     }
 }

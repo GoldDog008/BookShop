@@ -18,7 +18,7 @@ public partial class Book
 
     public int? AuthorId { get; set; }
 
-    public virtual Author Author { get; set; } = null!;
+    public virtual Author? Author { get; set; }
 
     public virtual ICollection<SalesHistory> SalesHistories { get; set; } = new List<SalesHistory>();
 
@@ -33,6 +33,6 @@ public partial class Book
 
     public override string ToString()
     {
-        return Name;
+        return Name.Trim();
     }
 }

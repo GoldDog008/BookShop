@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookShop.BL.Controller
 {
-    class BookController
+    public class BookController
     {
         private Book Book { get; }
 
@@ -140,16 +140,20 @@ namespace BookShop.BL.Controller
             return Book.ToString();
         }
 
-        public string GetAllBook()
+        public static string GetAllBook()
         {
             string booksData = "";
-            using (BookShopDBContext sb = new BookShopDBContext())
+            using (BookShopDBContext db = new BookShopDBContext())
             {
-                var books = sb.Users.ToList();
-                foreach (var book in books)
+                var books = db.Books.Include(a => a.Author).ToList();
+                if (books != null) 
                 {
-                    booksData += book.ToString() + '\n';
+                    foreach (var book in books)
+                    {
+                        booksData += book.ToString() + $" {book.Price}, {book?.Author?.Name.Trim() ?? "Нет данных"}, {book.Count}" + '\n';
+                    }
                 }
+                else { booksData = "Не найдено ни одной книги"; }
             }
             return booksData;
         }
