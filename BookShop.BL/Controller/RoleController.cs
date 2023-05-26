@@ -18,7 +18,7 @@ namespace BookShop.BL.Controller
         /// <param name="newRole"></param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
-        public void ChangeUserRole(User admin, User changingUser, string newRole)
+        public static void ChangeUserRole(User admin, User changingUser, int newRoleId)
         {
             #region Проверки
             if (admin == null)
@@ -29,15 +29,11 @@ namespace BookShop.BL.Controller
             {
                 throw new ArgumentNullException("Пользователь не может быть null");
             }
-            if (string.IsNullOrEmpty(newRole))
-            {
-                throw new ArgumentNullException("Роль не может быть null");
-            }
             #endregion
 
             using (BookShopDBContext db = new BookShopDBContext())
             {
-                var existingRole = db.Roles.SingleOrDefault(r => r.Name == newRole);
+                var existingRole = db.Roles.SingleOrDefault(r => r.Id == newRoleId);
                 if (existingRole == null)
                 {
                     throw new InvalidOperationException("Роль не существует");

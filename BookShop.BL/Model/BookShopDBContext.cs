@@ -60,7 +60,6 @@ public partial class BookShopDBContext : DbContext
         {
             entity.ToTable("Residence");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.City)
                 .HasMaxLength(100)
                 .IsFixedLength();

@@ -56,18 +56,19 @@ namespace BookShop
                                                             lastName: data.Item2,
                                                             roleId: 1,              // обычный юзер
                                                             email: email,
-                                                            phone: data.Item3,
-                                                            residenceId: null);
+                                                            phone: data.Item3);
                     }
                 }
 
             } while (controller == null);
             #endregion
 
+            //Residence residence = new Residence("Харьковская область", "Донец", "Спортивная", 32, 8);
+            controller.ChangeUserData(region: "Харьковская область");
             Console.WriteLine($"Добро пожаловать {controller.ToString()}.");
             while (true)
             {
-                if (controller is AdminController admin) 
+                if (controller is AdminController) 
                 {
                     PrintAdminMenu();
                 }
@@ -80,15 +81,25 @@ namespace BookShop
 
                 switch (choice.ToLower())
                 {
-                    case "x" when controller is AdminController:
-                        Console.WriteLine("Добавить новую книгу");
-                        break;
+                    //case "b" when controller is AdminController:
+                    //    //Console.WriteLine(controller.GetA);
+                    //    break;
 
                     case "q":
                         var allBooks = BookController.GetAllBook();
                         Console.WriteLine(allBooks);
                         break;
 
+                    case "w":
+                        Console.WriteLine(controller.GetAllInformationAboutUser());
+                        break;
+
+                    case "e":
+                        PrintChangeUserDataMenu();
+                        string changeChoice = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+
+                        break;
                     default:
                         Console.WriteLine("Некорректные данные");
                         continue;
@@ -135,6 +146,8 @@ namespace BookShop
         {
             PrintUserMenu();
 
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+
             Console.WriteLine();
             Console.WriteLine("Z - Изменить пользователю права");
             Console.WriteLine("X - Добавить новую книгу");
@@ -142,9 +155,13 @@ namespace BookShop
             Console.WriteLine("V - Удалить пользователя");
             Console.WriteLine("B - Посмотреть весь список пользователей");
             Console.WriteLine("N - Получить историю продаж");
+
+            Console.ResetColor();
         }
         static void PrintUserMenu()
         {
+            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            
             Console.WriteLine("Что вы хотите сделать?");
             Console.WriteLine("Q - Посмотреть весь список книг");
             Console.WriteLine("W - Посмотреть всю информацию о себе");
@@ -152,6 +169,87 @@ namespace BookShop
             Console.WriteLine("R - Добавить книгу в корзину");
             Console.WriteLine("T - Посмотреть корзину");
             Console.WriteLine("Y - Совершить покупку");
+
+            Console.ResetColor();
+        }
+        static void PrintChangeUserDataMenu()
+        {
+            Console.WriteLine("Что вы хотите изменить?");
+            Console.WriteLine("Q - Имя");
+            Console.WriteLine("W - Фамилия");
+            Console.WriteLine("E - Телефон");
+            Console.WriteLine("R - Место жительства");
+            Console.WriteLine("T - Город жительства");
+            Console.WriteLine("Y - Номер дома");
+            Console.WriteLine("U - Номер квартиры");
+        }
+        static void ChangeUserData(string changeChoice, UserController user)
+        {
+            switch (changeChoice.ToLower()) 
+            {
+                case "q":
+                    Console.WriteLine("Введите новое имя:");
+                    string firstName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                    user.ChangeUserData(firstName: firstName);
+                    break;
+
+                case "w":
+                    Console.WriteLine("Введите новою фамилию:");
+                    string lastName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null"); 
+
+                    user.ChangeUserData(lastName: lastName);
+                    break;
+
+                case "e":
+                    Console.WriteLine("Введите новый номер телефона:");
+                    string phone = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                    user.ChangeUserData(phone: phone);
+                    break;
+
+                case "r":
+                    string houseNumber, apartmentNumber;
+                    int houseNum, apartNum;
+
+                    Console.WriteLine("Введите область:");
+                    string region = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                    Console.WriteLine("Введите город:");
+                    string city = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                    Console.WriteLine("Введите улицу:");
+                    string street = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                    
+                    do
+                    {
+                        Console.WriteLine("Введите номер дома:");
+                        houseNumber = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                    } while (int.TryParse(houseNumber, out houseNum));
+
+                    do
+                    {
+                        Console.WriteLine("Введите номер дома:");
+                        apartmentNumber = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                    } while (int.TryParse(apartmentNumber, out apartNum));
+
+                    if (user.GetResidence() == null)
+                    {
+                        //Residence residence = new Residence();
+                    }
+                    else
+                    {
+                       // user.ChangeUserData(phone: phone);
+                    }
+                    
+                    break;
+                default:
+                    Console.WriteLine("Некорректные данные");
+                    break;
+            }
         }
     }
 }

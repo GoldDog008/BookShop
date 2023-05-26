@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookShop.BL.Migrations
 {
     [DbContext(typeof(BookShopDBContext))]
-    [Migration("20230523161049_second")]
-    partial class second
+    [Migration("20230526110008_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,7 +53,6 @@ namespace BookShop.BL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("AuthorId")
-                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<int>("Count")
@@ -215,7 +214,6 @@ namespace BookShop.BL.Migrations
                     b.HasOne("BookShop.BL.Model.Author", "Author")
                         .WithMany("Books")
                         .HasForeignKey("AuthorId")
-                        .IsRequired()
                         .HasConstraintName("FK_Books_Authors");
 
                     b.Navigation("Author");

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookShop.BL.Migrations
 {
     [DbContext(typeof(BookShopDBContext))]
-    [Migration("20230514122331_SecondMigration")]
-    partial class SecondMigration
+    [Migration("20230526123547_ResidenceModify2")]
+    partial class ResidenceModify2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,7 +53,6 @@ namespace BookShop.BL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("AuthorId")
-                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<int>("Count")
@@ -83,27 +82,30 @@ namespace BookShop.BL.Migrations
             modelBuilder.Entity("BookShop.BL.Model.Residence", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("ApartmentNumber")
                         .HasColumnType("int");
 
                     b.Property<string>("City")
-                        .HasMaxLength(35)
-                        .HasColumnType("nchar(35)")
+                        .HasMaxLength(100)
+                        .HasColumnType("nchar(100)")
                         .IsFixedLength();
 
                     b.Property<int?>("HouseNumber")
                         .HasColumnType("int");
 
                     b.Property<string>("Region")
-                        .HasMaxLength(35)
-                        .HasColumnType("nchar(35)")
+                        .HasMaxLength(100)
+                        .HasColumnType("nchar(100)")
                         .IsFixedLength();
 
                     b.Property<string>("Street")
-                        .HasMaxLength(35)
-                        .HasColumnType("nchar(35)")
+                        .HasMaxLength(100)
+                        .HasColumnType("nchar(100)")
                         .IsFixedLength();
 
                     b.HasKey("Id");
@@ -170,6 +172,7 @@ namespace BookShop.BL.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nchar(50)")
                         .IsFixedLength();
@@ -200,8 +203,7 @@ namespace BookShop.BL.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
-                        .IsUnique()
-                        .HasFilter("[Email] IS NOT NULL");
+                        .IsUnique();
 
                     b.HasIndex("ResidenceId");
 
@@ -215,7 +217,6 @@ namespace BookShop.BL.Migrations
                     b.HasOne("BookShop.BL.Model.Author", "Author")
                         .WithMany("Books")
                         .HasForeignKey("AuthorId")
-                        .IsRequired()
                         .HasConstraintName("FK_Books_Authors");
 
                     b.Navigation("Author");

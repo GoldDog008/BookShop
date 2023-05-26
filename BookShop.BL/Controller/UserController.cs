@@ -10,8 +10,9 @@ namespace BookShop.BL.Controller
     public class UserController
     {
         protected User User { get; }
-        private bool IsNewUser { get; } = false;
+        protected ResidenceController Residence { get; set; }
         protected Dictionary<Book, int> Cart { get; set; } = new Dictionary<Book, int>();
+        private bool IsNewUser { get; } = false;
 
         /// <summary>
         /// Добавление нового пользователя вручную
@@ -26,6 +27,8 @@ namespace BookShop.BL.Controller
             }
 
             User = user;
+            Residence = new ResidenceController(user);
+
             using (BookShopDBContext db = new BookShopDBContext())
             {
                 db.Users.Add(User);
@@ -53,6 +56,15 @@ namespace BookShop.BL.Controller
                     .Include(s => s.SalesHistories)
                     .SingleOrDefault(u => u.Email == email)
                     ?? throw new InvalidOperationException($"Пользователя с почтой {email} не найдено.");
+
+                if (User.Residence != null)
+                {
+                    Residence = new ResidenceController(User);
+                }
+                else 
+                {
+                    Residence = new ResidenceController(User, null);
+                }
             }
         }
 
@@ -66,7 +78,7 @@ namespace BookShop.BL.Controller
         /// <param name="email"></param>
         /// <param name="phone"></param>
         /// <param name="residenceId"></param>
-        public UserController(string firstName, string lastName, int roleId, string email, string? phone = null, int? residenceId = null)
+        public UserController(string firstName, string lastName, int roleId, string email, string? phone = null)
         {
             IsNewUser = true;
 
@@ -75,7 +87,7 @@ namespace BookShop.BL.Controller
             IsRoleValid(roleId);
             IsEmailValid(email);
 
-            User = new User(firstName, lastName, roleId, email, phone, residenceId);
+            User = new User(firstName, lastName, roleId, email, phone);
 
             using (BookShopDBContext db = new BookShopDBContext())
             {
@@ -84,7 +96,14 @@ namespace BookShop.BL.Controller
             }
         }
 
-        public bool ChangeUserData(string firstName = null, string lastName = null, string phone = null, Residence residence = null)
+        public bool ChangeUserData(string firstName = null, 
+                                   string lastName = null, 
+                                   string phone = null, 
+                                   string? region = null, 
+                                   string? city = null, 
+                                   string? street = null, 
+                                   int? houseNumber = null, 
+                                   int? apartmentNumber = null)
         {
             bool isDataChanged = false;
 
@@ -114,10 +133,29 @@ namespace BookShop.BL.Controller
                         user.Phone = phone;
                         isDataChanged = true;
                     }
-                    if (residence != null)
+                    if (region != null)
                     {
-                        User.Residence = residence;
-                        user.Residence = residence;
+                        Residence.ChangeResidenceData(region: region);
+                        isDataChanged = true;
+                    }
+                    if (city != null)
+                    {
+                        Residence.ChangeResidenceData(city: city);
+                        isDataChanged = true;
+                    }
+                    if (street != null)
+                    {
+                        Residence.ChangeResidenceData(street: street);
+                        isDataChanged = true;
+                    }
+                    if (houseNumber != null)
+                    {
+                        Residence.ChangeResidenceData(houseNumber: houseNumber);
+                        isDataChanged = true;
+                    }
+                    if (apartmentNumber != null)
+                    {
+                        Residence.ChangeResidenceData(apartmentNumber: apartmentNumber);
                         isDataChanged = true;
                     }
 
@@ -132,7 +170,9 @@ namespace BookShop.BL.Controller
             } 
         }
 
-        private bool IsFirstNameValid(string firstName)
+
+
+        protected bool IsFirstNameValid(string firstName)
         {
             if (string.IsNullOrEmpty(firstName))
             {
@@ -145,7 +185,7 @@ namespace BookShop.BL.Controller
 
             return true;
         }
-        private bool IsLastNameValid(string lastName)
+        protected bool IsLastNameValid(string lastName)
         {
             if (string.IsNullOrEmpty(lastName))
             {
@@ -158,11 +198,11 @@ namespace BookShop.BL.Controller
 
             return true;
         }
-        private bool IsRoleValid(int role)
+        protected bool IsRoleValid(int role)
         {
-            if (role == 0)
+            if (role < 1)
             {
-                throw new InvalidOperationException("Роль пользователя не может быть равна 0");
+                throw new InvalidOperationException("Роль пользователя не может меньше 1");
             }
 
             using (BookShopDBContext db = new BookShopDBContext())
@@ -175,7 +215,7 @@ namespace BookShop.BL.Controller
             }
             return true;
         }
-        private bool IsEmailValid(string email)
+        protected bool IsEmailValid(string email)
         {
             if (string.IsNullOrEmpty(email))
             {
@@ -202,7 +242,7 @@ namespace BookShop.BL.Controller
             }
             return true;
         }
-        private bool IsPhoneValid(string phone)
+        protected bool IsPhoneValid(string phone)
         {
             if (phone == null)
             {
@@ -224,18 +264,6 @@ namespace BookShop.BL.Controller
         {
             return User.SalesHistories;
         }
-        public string GetRole()
-        {
-            return User.Role.Name;
-        }
-        public string GetEmail()
-        {
-            return User.Email;
-        }
-        public string? GetPhone()
-        {
-            return User.Phone;
-        }
         public Residence? GetResidence()
         {
             return User.Residence;
@@ -243,6 +271,17 @@ namespace BookShop.BL.Controller
         public override string ToString()
         {
             return User.ToString();
+        }
+        public string GetAllInformationAboutUser()
+        {
+            return $"Id: {User.Id}, Имя: {User.ToString()}\n" +
+                $"Телефон: {User.Phone ?? "Нет данных"}\n" +
+                $"Почта: {User.Email}\n" +
+                $"Роль: {User.Role.Name}\n" +
+                $"Область: {User?.Residence?.Region ?? "Нет данных"}\n" +
+                $"Город: {User?.Residence?.City ?? "Нет данных"}\n" +
+                $"Номер дома: {User?.Residence?.HouseNumber.ToString() ?? "Нет данных"}\n" +
+                $"Номер квартиры: {User?.Residence?.ApartmentNumber.ToString() ?? "Нет данных"}\n";
         }
 
         public void AddToCart(Book book, int count)
