@@ -11,23 +11,28 @@ namespace BookShop.BL.Controller
 {
     public class ResidenceController
     {
+        /// <summary>
+        /// Пользователь
+        /// </summary>
         private User User { get; }
+
+        /// <summary>
+        /// Место жительства пользователя
+        /// </summary>
         private Residence Residence { get; set; }
 
         public ResidenceController(User user)
         {
-            User = user;
+            User = user ?? throw new ArgumentNullException("Пользователь не может быть null.");
             Residence = User.Residence;
         }
         public ResidenceController(User user, string? region = null, string? city = null, string? street = null, int? houseNumber = null, int? apartmentNumber = null)
         {
-            User = user;
+            User = user ?? throw new ArgumentNullException("Пользователь не может быть null.");
             Residence = new Residence(region, city, street, houseNumber, apartmentNumber);
 
             using (BookShopDBContext db = new BookShopDBContext())
             {
-                //db.Residences.Add(Residence);
-
                 var us = db.Users.SingleOrDefault(u => u.Id == User.Id);
                 if (us != null)
                 {
@@ -38,17 +43,26 @@ namespace BookShop.BL.Controller
                     throw new InvalidOperationException("Пользователь не найден");
                 }
 
-
                 db.SaveChanges();
             }
         }
-        public bool ChangeResidenceData(string? region = null, string? city = null, string? street = null, int? houseNumber = null, int? apartmentNumber = null)
+       
+        /// <summary>
+        /// Изменить данные о месте жительства пользователя
+        /// </summary>
+        /// <param name="region"></param>
+        /// <param name="city"></param>
+        /// <param name="street"></param>
+        /// <param name="houseNumber"></param>
+        /// <param name="apartmentNumber"></param>
+        /// <returns></returns>
+        public async Task<bool> ChangeResidenceDataAsync(string? region = null, string? city = null, string? street = null, int? houseNumber = null, int? apartmentNumber = null)
         {
             bool isDataChanged = false;
 
             using (BookShopDBContext db = new BookShopDBContext())
             {
-                var user = db.Users.SingleOrDefault(u => u.Id == User.Id);
+                var user = await db.Users.Include(r=>r.Residence).SingleOrDefaultAsync(u => u.Id == User.Id);
                 if (user != null)
                 {
                     if (region != null)

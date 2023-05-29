@@ -9,7 +9,7 @@ namespace BookShop
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.WriteLine("Добро пожаловать в МОЙ книжный магазин у которого ещё нет названия)");
             //canek.kryt.12@gmail.com
@@ -64,8 +64,14 @@ namespace BookShop
             #endregion
 
             //Residence residence = new Residence("Харьковская область", "Донец", "Спортивная", 32, 8);
-            controller.ChangeUserData(region: "Харьковская область");
+            await controller.ChangeUserDataAsync(region: "Харьковская область", 
+                                                city: "Донец", 
+                                                street: "Спортивная", 
+                                                houseNumber: 32, 
+                                                apartmentNumber: 8);
+
             Console.WriteLine($"Добро пожаловать {controller.ToString()}.");
+
             while (true)
             {
                 if (controller is AdminController) 
@@ -107,6 +113,10 @@ namespace BookShop
             }
         }
 
+        /// <summary>
+        /// Ввод данных для нового пользователя
+        /// </summary>
+        /// <returns></returns>
         static (string, string, string?) InputDataForNewUser()
         {
             Console.Write("Введите имя пользователя: ");
@@ -142,6 +152,10 @@ namespace BookShop
 
             return (FirstName, LastName, Phone);
         }
+
+        /// <summary>
+        /// Отобразить меню для админа
+        /// </summary>
         static void PrintAdminMenu()
         {
             PrintUserMenu();
@@ -158,6 +172,10 @@ namespace BookShop
 
             Console.ResetColor();
         }
+
+        /// <summary>
+        /// Отобразить меню для пользователя
+        /// </summary>
         static void PrintUserMenu()
         {
             Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -172,6 +190,10 @@ namespace BookShop
 
             Console.ResetColor();
         }
+
+        /// <summary>
+        /// Отобразить меню для сменны данных о пользователе
+        /// </summary>
         static void PrintChangeUserDataMenu()
         {
             Console.WriteLine("Что вы хотите изменить?");
@@ -183,7 +205,7 @@ namespace BookShop
             Console.WriteLine("Y - Номер дома");
             Console.WriteLine("U - Номер квартиры");
         }
-        static void ChangeUserData(string changeChoice, UserController user)
+        static async void ChangeUserData(string changeChoice, UserController user)
         {
             switch (changeChoice.ToLower()) 
             {
@@ -191,21 +213,21 @@ namespace BookShop
                     Console.WriteLine("Введите новое имя:");
                     string firstName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
 
-                    user.ChangeUserData(firstName: firstName);
+                    await user.ChangeUserDataAsync(firstName: firstName);
                     break;
 
                 case "w":
                     Console.WriteLine("Введите новою фамилию:");
-                    string lastName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null"); 
+                    string lastName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
 
-                    user.ChangeUserData(lastName: lastName);
+                    await user.ChangeUserDataAsync(lastName: lastName);
                     break;
 
                 case "e":
                     Console.WriteLine("Введите новый номер телефона:");
                     string phone = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
 
-                    user.ChangeUserData(phone: phone);
+                    user.ChangeUserDataAsync(phone: phone);
                     break;
 
                 case "r":
