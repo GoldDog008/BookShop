@@ -20,4 +20,13 @@ public partial class SalesHistory
     public virtual Book Book { get; set; } = null!;
 
     public virtual User User { get; set; } = null!;
+
+    public SalesHistory(int bookId, int userId, int count, decimal price, DateTime date) 
+    {
+        BookId = bookId;
+        UserId = userId;
+        Count = count;
+        Price = price;
+        Date = date;
+    }
 }

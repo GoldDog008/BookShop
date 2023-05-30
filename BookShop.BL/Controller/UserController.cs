@@ -22,7 +22,7 @@ namespace BookShop.BL.Controller
         /// <summary>
         /// Корзина пользователя
         /// </summary>
-        protected Dictionary<Book, int> Cart { get; set; } = new Dictionary<Book, int>();
+        protected Dictionary<BookController, int> Cart { get; set; } = new Dictionary<BookController, int>();
         private bool IsNewUser { get; } = false;
 
         /// <summary>
@@ -366,7 +366,7 @@ namespace BookShop.BL.Controller
         /// <param name="count"></param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
-        public void AddToCart(Book book, int count)
+        public void AddToCart(BookController book, int count)
         {
             if (book == null)
             {
@@ -376,9 +376,9 @@ namespace BookShop.BL.Controller
             {
                 throw new InvalidOperationException("Количество товара для покупки не может быть 0");
             }
-            if (book.Count < count)
+            if (book.GetCount() < count)
             {
-                throw new InvalidOperationException("На складе недостаточное количество товара для совершение сделки");
+                throw new InvalidOperationException("На складе недостаточное количество товара для совершения сделки");
             }
 
             Cart.Add(book, count);
@@ -389,18 +389,40 @@ namespace BookShop.BL.Controller
         /// </summary>
         public void Payment()
         {
+            if (!Residence.IsAllDataAreFilled())
+            {
+                throw new InvalidOperationException("Невозможно завершить заказ, потому что не все данные о месте жительства заполнены");
+            }
             using (BookShopDBContext db = new BookShopDBContext())
             {
                 foreach (var books in Cart)
                 {
-                    var book = db.Books.SingleOrDefault(b => b.Id == books.Key.Id);
+                    var book = db.Books.SingleOrDefault(b => b.Id == books.Key.GetId());
                     if (book != null)
                     {
+                        SalesHistory sale = new SalesHistory(book.Id, User.Id, book.Price * books.Value, DateTime.Now);
                         book.Count -= books.Value;
+                        //db.SalesHistories.Add
                         db.SaveChanges();
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Получить товары из корзины
+        /// </summary>
+        /// <returns></returns>
+        public string GetItemsFromCart()
+        {
+            StringBuilder books = new StringBuilder();
+
+            foreach(var book in Cart)
+            {
+                books.Append($"Книга: {book.Key.ToString()} Количество: {book.Value}");
+            }
+
+            return books.ToString();
         }
 
         /// <summary>

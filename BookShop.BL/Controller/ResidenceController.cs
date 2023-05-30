@@ -104,5 +104,18 @@ namespace BookShop.BL.Controller
             }
             return false;
         }
+        public bool IsAllDataAreFilled()
+        {
+            if (Residence.Region == null || 
+                Residence.City == null || 
+                Residence.Street == null || 
+                Residence.HouseNumber == null || 
+                Residence.ApartmentNumber == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

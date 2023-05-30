@@ -6,6 +6,7 @@ namespace BookShop.BL.Controller
     public class BookController
     {
         private Book Book { get; }
+        private Author Author { get; }
 
         /// <summary>
         /// Добавление новой книги вручную.
@@ -119,9 +120,13 @@ namespace BookShop.BL.Controller
             return true;
         }
 
-        public string? GetDescription()
+        public int GetId()
         {
-            return Book.Description;
+            return Book.Id;
+        }
+        public string GetDescription()
+        {
+            return Book?.Description ?? "Нет данных";
         }
         public int GetCount()
         {
@@ -131,9 +136,9 @@ namespace BookShop.BL.Controller
         {
             return Book.Price;
         }
-        public Author? GetAuthor()
+        public string GetAuthor()
         {
-            return Book.Author;
+            return Book?.Author?.Name ?? "Нет данных";
         }
         public override string ToString()
         {
@@ -146,7 +151,7 @@ namespace BookShop.BL.Controller
             using (BookShopDBContext db = new BookShopDBContext())
             {
                 var books = db.Books.Include(a => a.Author).ToList();
-                if (books != null) 
+                if (books != null)
                 {
                     foreach (var book in books)
                     {
@@ -156,6 +161,23 @@ namespace BookShop.BL.Controller
                 else { booksData = "Не найдено ни одной книги"; }
             }
             return booksData;
+        }
+
+        public void ChangeAuthor(int authorId, int bookId)
+        {
+            using (BookShopDBContext db = new BookShopDBContext())
+            {
+                var existingAuthor = db.Authors.SingleOrDefault(a => a.Id == authorId);
+                if (existingAuthor != null) 
+                {
+                    var book = db.Books.SingleOrDefault(b => b.Id == bookId);
+                    if (book != null) 
+                    {
+                        book.Author = existingAuthor;
+                        db.SaveChanges();
+                    }
+                }
+            }
         }
     }
 }

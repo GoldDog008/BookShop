@@ -12,10 +12,9 @@ namespace BookShop
         static async Task Main(string[] args)
         {
             Console.WriteLine("Добро пожаловать в МОЙ книжный магазин у которого ещё нет названия)");
-            //canek.kryt.12@gmail.com
+            //canek.kryt.12@gmail.com WarAndPeace  Данте Алигьери                                     
             //asdqwert@mail.ru                                  
             UserController controller = null;
-            BookController bookController = null;
 
             #region Вход в существующий аккаунт или создание нового
             do
@@ -26,7 +25,7 @@ namespace BookShop
                 try
                 {
                     controller = new UserController(email);
-                    if (controller.IsAdmin()) 
+                    if (controller.IsAdmin())
                     {
                         controller = new AdminController(email);
                     }
@@ -63,18 +62,11 @@ namespace BookShop
             } while (controller == null);
             #endregion
 
-            //Residence residence = new Residence("Харьковская область", "Донец", "Спортивная", 32, 8);
-            await controller.ChangeUserDataAsync(region: "Харьковская область", 
-                                                city: "Донец", 
-                                                street: "Спортивная", 
-                                                houseNumber: 32, 
-                                                apartmentNumber: 8);
-
             Console.WriteLine($"Добро пожаловать {controller.ToString()}.");
 
             while (true)
             {
-                if (controller is AdminController) 
+                if (controller is AdminController)
                 {
                     PrintAdminMenu();
                 }
@@ -91,21 +83,94 @@ namespace BookShop
                     //    //Console.WriteLine(controller.GetA);
                     //    break;
 
-                    case "q":
-                        var allBooks = BookController.GetAllBook();
-                        Console.WriteLine(allBooks);
-                        break;
 
-                    case "w":
-                        Console.WriteLine(controller.GetAllInformationAboutUser());
-                        break;
+                    case "q": // Посмотреть список всех книг
+                        {
+                            var allBooks = BookController.GetAllBook();
+                            Console.WriteLine(allBooks);
+                            break;
+                        }
+                    case "w": // Найти опреденную книгу
+                        {
+                            Console.WriteLine("Введите книгу, которую нужно найти");
+                            string bookName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
 
-                    case "e":
-                        PrintChangeUserDataMenu();
-                        string changeChoice = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                            BookController book = new BookController(bookName);
+                            Console.WriteLine($"Цена: {book.GetPrice()}\n" +
+                                              $"Количество на складе: {book.GetCount()}\n" +
+                                              $"Автор: {book.GetAuthor()}\n" +
+                                              $"Описание: {book.GetDescription()}");
+                            break;
+                        }
+                    case "e": // Посмотреть все книги от определенного автора
+                        {
+                            Console.WriteLine("Введите автора:");
+                            string name = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                            string authorBooks = "";
+                            
+                            try
+                            {
+                                authorBooks = AuthorController.GetAllBooksByAuthorAsync(name); 
+                                Console.WriteLine(authorBooks);
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                            }
 
+                            break;
+                        }
+                    case "r": // Посмотреть всю информацию о себе
+                        {
+                            Console.WriteLine(controller.GetAllInformationAboutUser());
+                            break;
+                        }
+                    case "t": // Изменить информацию о себе
+                        {
+                            PrintChangeUserDataMenu();
+                            string changeChoice = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                            ChangeUserData(changeChoice, controller);
 
-                        break;
+                            Console.WriteLine("Данные были успешно изменены");
+                            break;
+                        }
+                    case "y": // Добавить книгу в корзину
+                        {
+                            BookController book = null;
+                            int bookCount;
+                            string inputCount;
+
+                            Console.WriteLine("Введите название книги:");
+                            string bookName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                            
+                            do
+                            {
+                                Console.WriteLine("Введите количество книг которые вы хотите купить:");
+                                inputCount = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                            } while (!int.TryParse(inputCount, out bookCount));
+                            
+                            try
+                            {
+                                book = new BookController(bookName);
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                            }
+
+                            controller.AddToCart(book, bookCount);
+                            Console.WriteLine($"Книга с названием {book.ToString()} была добавлена в корзину");
+
+                            break;
+                        }
+                    case "u": // Посмотреть корзину
+                        {
+                            var cart = controller.GetItemsFromCart();
+                            Console.WriteLine(cart);
+                            break;
+                        }
+                    case "i": // Удалить товар из корзины
                     default:
                         Console.WriteLine("Некорректные данные");
                         continue;
@@ -165,10 +230,10 @@ namespace BookShop
             Console.WriteLine();
             Console.WriteLine("Z - Изменить пользователю права");
             Console.WriteLine("X - Добавить новую книгу");
-            Console.WriteLine("C - Редактировать существующую книгу");
+            Console.WriteLine("C - Редактировать существующую книгу (не реализовано)");
             Console.WriteLine("V - Удалить пользователя");
             Console.WriteLine("B - Посмотреть весь список пользователей");
-            Console.WriteLine("N - Получить историю продаж");
+            Console.WriteLine("N - Получить историю продаж пользователя");
 
             Console.ResetColor();
         }
@@ -179,14 +244,17 @@ namespace BookShop
         static void PrintUserMenu()
         {
             Console.ForegroundColor = ConsoleColor.DarkGreen;
-            
+
             Console.WriteLine("Что вы хотите сделать?");
             Console.WriteLine("Q - Посмотреть весь список книг");
-            Console.WriteLine("W - Посмотреть всю информацию о себе");
-            Console.WriteLine("E - Изменить информацию о себе");
-            Console.WriteLine("R - Добавить книгу в корзину");
-            Console.WriteLine("T - Посмотреть корзину");
-            Console.WriteLine("Y - Совершить покупку");
+            Console.WriteLine("W - Найти опреденную книгу");
+            Console.WriteLine("E - Посмотреть все книги от определенного автора");
+            Console.WriteLine("R - Посмотреть всю информацию о себе");
+            Console.WriteLine("T - Изменить информацию о себе");
+            Console.WriteLine("Y - Добавить книгу в корзину");
+            Console.WriteLine("U - Посмотреть корзину");
+            Console.WriteLine("I - Удалить товар из корзины");
+            Console.WriteLine("O - Совершить покупку");
 
             Console.ResetColor();
         }
@@ -200,74 +268,108 @@ namespace BookShop
             Console.WriteLine("Q - Имя");
             Console.WriteLine("W - Фамилия");
             Console.WriteLine("E - Телефон");
-            Console.WriteLine("R - Место жительства");
-            Console.WriteLine("T - Город жительства");
-            Console.WriteLine("Y - Номер дома");
-            Console.WriteLine("U - Номер квартиры");
+            Console.WriteLine("R - Область");
+            Console.WriteLine("T - Город");
+            Console.WriteLine("Y - Улица");
+            Console.WriteLine("U - Номер дома");
+            Console.WriteLine("I - Номер квартиры");
+            Console.WriteLine("U - Выйти из этого меню");
         }
+
+        /// <summary>
+        /// Ввод новых данных для данных о пользователе
+        /// </summary>
+        /// <param name="changeChoice"></param>
+        /// <param name="user"></param>
+        /// <exception cref="ArgumentNullException"></exception>
         static async void ChangeUserData(string changeChoice, UserController user)
         {
-            switch (changeChoice.ToLower()) 
+            string firstName, lastName, phone, region, city, street;
+            string inputNumber;
+            int houseNumber, apartmentNumber;
+
+            switch (changeChoice.ToLower())
             {
-                case "q":
-                    Console.WriteLine("Введите новое имя:");
-                    string firstName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-
-                    await user.ChangeUserDataAsync(firstName: firstName);
-                    break;
-
-                case "w":
-                    Console.WriteLine("Введите новою фамилию:");
-                    string lastName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-
-                    await user.ChangeUserDataAsync(lastName: lastName);
-                    break;
-
-                case "e":
-                    Console.WriteLine("Введите новый номер телефона:");
-                    string phone = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-
-                    user.ChangeUserDataAsync(phone: phone);
-                    break;
-
-                case "r":
-                    string houseNumber, apartmentNumber;
-                    int houseNum, apartNum;
-
-                    Console.WriteLine("Введите область:");
-                    string region = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-
-                    Console.WriteLine("Введите город:");
-                    string city = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-
-                    Console.WriteLine("Введите улицу:");
-                    string street = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-
-                    
-                    do
+                case "q": // Смена имени
                     {
-                        Console.WriteLine("Введите номер дома:");
-                        houseNumber = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                        Console.WriteLine("Введите новое имя:");
 
-                    } while (int.TryParse(houseNumber, out houseNum));
-
-                    do
-                    {
-                        Console.WriteLine("Введите номер дома:");
-                        apartmentNumber = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-
-                    } while (int.TryParse(apartmentNumber, out apartNum));
-
-                    if (user.GetResidence() == null)
-                    {
-                        //Residence residence = new Residence();
+                        firstName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                        await user.ChangeUserDataAsync(firstName: firstName);
+                        break;
                     }
-                    else
+
+                case "w": // Смена фамилии
                     {
-                       // user.ChangeUserData(phone: phone);
+                        Console.WriteLine("Введите новою фамилию:");
+
+                        lastName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                        await user.ChangeUserDataAsync(lastName: lastName);
+                        break;
                     }
-                    
-                    break;
+
+                case "e": // Смена номера телефона
+                    {
+                        Console.WriteLine("Введите новый номер телефона:");
+
+                        phone = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                        await user.ChangeUserDataAsync(phone: phone);
+                        break;
+                    }
+
+                case "r": // Смена области
+                    {
+                        Console.WriteLine("Введите область:");
+
+                        region = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                        await user.ChangeUserDataAsync(region: region);
+                        break;
+                    }
+
+                case "t": // Смена города
+                    {
+                        Console.WriteLine("Введите город:");
+
+                        city = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                        await user.ChangeUserDataAsync(city: city);
+                        break;
+                    }
+
+                case "y": // Смена улицы
+                    {
+                        Console.WriteLine("Введите улицу:");
+
+                        street = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                        await user.ChangeUserDataAsync(street: street);
+                        break;
+                    }
+
+                case "u": // Смена номера дома
+                    {
+                        do
+                        {
+                            Console.WriteLine("Введите номер дома:");
+                            inputNumber = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                        } while (!int.TryParse(inputNumber, out houseNumber));
+
+                        await user.ChangeUserDataAsync(houseNumber: houseNumber);
+                        break;
+                    }
+
+                case "i": // Смена номера квартиры
+                    {
+                        do
+                        {
+                            Console.WriteLine("номер квартиры:");
+                            inputNumber = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                        } while (!int.TryParse(inputNumber, out apartmentNumber));
+
+                        await user.ChangeUserDataAsync(apartmentNumber: apartmentNumber);
+                        break;
+                    }
+
                 default:
                     Console.WriteLine("Некорректные данные");
                     break;
