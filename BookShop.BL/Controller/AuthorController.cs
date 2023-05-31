@@ -33,8 +33,13 @@ namespace BookShop.BL.Controller
         /// <param name="name"></param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public static string GetAllBooksByAuthorAsync(string name)
+        public static string GetAllBooksByAuthor(string name)
         {
+            if (string.IsNullOrEmpty(name))
+            {
+                throw new ArgumentNullException("Имя автора не может быть null");
+            }
+
             StringBuilder allBooks = new StringBuilder();
 
             using (BookShopDBContext db = new BookShopDBContext())

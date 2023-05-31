@@ -83,7 +83,6 @@ namespace BookShop
                     //    //Console.WriteLine(controller.GetA);
                     //    break;
 
-
                     case "q": // Посмотреть список всех книг
                         {
                             var allBooks = BookController.GetAllBook();
@@ -94,8 +93,23 @@ namespace BookShop
                         {
                             Console.WriteLine("Введите книгу, которую нужно найти");
                             string bookName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                            BookController book = null;
 
-                            BookController book = new BookController(bookName);
+                            try
+                            {
+                                book = new BookController(bookName);
+                            }
+                            catch(ArgumentNullException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
+                            }
+
                             Console.WriteLine($"Цена: {book.GetPrice()}\n" +
                                               $"Количество на складе: {book.GetCount()}\n" +
                                               $"Автор: {book.GetAuthor()}\n" +
@@ -107,15 +121,21 @@ namespace BookShop
                             Console.WriteLine("Введите автора:");
                             string name = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
                             string authorBooks = "";
-                            
+
                             try
                             {
-                                authorBooks = AuthorController.GetAllBooksByAuthorAsync(name); 
+                                authorBooks = AuthorController.GetAllBooksByAuthor(name);
                                 Console.WriteLine(authorBooks);
+                            }
+                            catch(ArgumentNullException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
                             }
                             catch (InvalidOperationException ex)
                             {
                                 Console.WriteLine(ex.Message);
+                                break;
                             }
 
                             break;
@@ -128,10 +148,27 @@ namespace BookShop
                     case "t": // Изменить информацию о себе
                         {
                             PrintChangeUserDataMenu();
-                            string changeChoice = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-                            ChangeUserData(changeChoice, controller);
+                            string userInput = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                            bool IsChanged = false;
 
-                            Console.WriteLine("Данные были успешно изменены");
+                            try
+                            {
+                                IsChanged = await ChangeUserData(userInput, controller);
+                            }
+                            catch (ArgumentNullException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
+                            }
+
+                            if (IsChanged)
+                            {
+                                Console.WriteLine("Данные были успешно изменены");
+                            }
+                            else
+                            {
+                                Console.WriteLine("Данные изменены не были");
+                            }
                             break;
                         }
                     case "y": // Добавить книгу в корзину
@@ -142,24 +179,30 @@ namespace BookShop
 
                             Console.WriteLine("Введите название книги:");
                             string bookName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-                            
+
                             do
                             {
                                 Console.WriteLine("Введите количество книг которые вы хотите купить:");
                                 inputCount = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
 
                             } while (!int.TryParse(inputCount, out bookCount));
-                            
+                          
                             try
                             {
-                                book = new BookController(bookName);
+                                book = GetBook(bookName);
+                                controller.AddToCart(book.GetId(), bookCount);
                             }
-                            catch (InvalidOperationException ex)
+                            catch (ArgumentNullException ex)
                             {
                                 Console.WriteLine(ex.Message);
+                                break;
+                            }
+                            catch(InvalidOperationException ex) 
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
                             }
 
-                            controller.AddToCart(book, bookCount);
                             Console.WriteLine($"Книга с названием {book.ToString()} была добавлена в корзину");
 
                             break;
@@ -171,6 +214,45 @@ namespace BookShop
                             break;
                         }
                     case "i": // Удалить товар из корзины
+                        {
+                            Console.WriteLine("Введите название книги:");
+
+                            string bookName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                            try
+                            {
+                                BookController book = GetBook(bookName);
+                                controller.DeleteFromCart(book.GetId());
+                            }
+                            catch (ArgumentNullException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
+                            }
+                            
+                            Console.WriteLine("Книга была успешна удалена из корззины");
+                            break;
+                        }
+                    case "o": // Совершить покупку
+                        {
+                            try
+                            {
+                                controller.Payment();
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
+                            }
+
+                            Console.WriteLine("Покупка успешна");
+                            break;
+                        }
                     default:
                         Console.WriteLine("Некорректные данные");
                         continue;
@@ -282,98 +364,121 @@ namespace BookShop
         /// <param name="changeChoice"></param>
         /// <param name="user"></param>
         /// <exception cref="ArgumentNullException"></exception>
-        static async void ChangeUserData(string changeChoice, UserController user)
+        static async Task<bool> ChangeUserData(string userInput, UserController user)
         {
             string firstName, lastName, phone, region, city, street;
             string inputNumber;
             int houseNumber, apartmentNumber;
 
-            switch (changeChoice.ToLower())
+            try
             {
-                case "q": // Смена имени
-                    {
-                        Console.WriteLine("Введите новое имя:");
-
-                        firstName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-                        await user.ChangeUserDataAsync(firstName: firstName);
-                        break;
-                    }
-
-                case "w": // Смена фамилии
-                    {
-                        Console.WriteLine("Введите новою фамилию:");
-
-                        lastName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-                        await user.ChangeUserDataAsync(lastName: lastName);
-                        break;
-                    }
-
-                case "e": // Смена номера телефона
-                    {
-                        Console.WriteLine("Введите новый номер телефона:");
-
-                        phone = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-                        await user.ChangeUserDataAsync(phone: phone);
-                        break;
-                    }
-
-                case "r": // Смена области
-                    {
-                        Console.WriteLine("Введите область:");
-
-                        region = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-                        await user.ChangeUserDataAsync(region: region);
-                        break;
-                    }
-
-                case "t": // Смена города
-                    {
-                        Console.WriteLine("Введите город:");
-
-                        city = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-                        await user.ChangeUserDataAsync(city: city);
-                        break;
-                    }
-
-                case "y": // Смена улицы
-                    {
-                        Console.WriteLine("Введите улицу:");
-
-                        street = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
-                        await user.ChangeUserDataAsync(street: street);
-                        break;
-                    }
-
-                case "u": // Смена номера дома
-                    {
-                        do
+                switch (userInput.ToLower())
+                {
+                    case "q": // Смена имени
                         {
-                            Console.WriteLine("Введите номер дома:");
-                            inputNumber = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                            Console.WriteLine("Введите новое имя:");
 
-                        } while (!int.TryParse(inputNumber, out houseNumber));
+                            firstName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                            await user.ChangeUserDataAsync(firstName: firstName);
+                            break;
+                        }
 
-                        await user.ChangeUserDataAsync(houseNumber: houseNumber);
-                        break;
-                    }
-
-                case "i": // Смена номера квартиры
-                    {
-                        do
+                    case "w": // Смена фамилии
                         {
-                            Console.WriteLine("номер квартиры:");
-                            inputNumber = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                            Console.WriteLine("Введите новою фамилию:");
 
-                        } while (!int.TryParse(inputNumber, out apartmentNumber));
+                            lastName = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                            await user.ChangeUserDataAsync(lastName: lastName);
+                            break;
+                        }
 
-                        await user.ChangeUserDataAsync(apartmentNumber: apartmentNumber);
+                    case "e": // Смена номера телефона
+                        {
+                            Console.WriteLine("Введите новый номер телефона:");
+
+                            phone = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                            await user.ChangeUserDataAsync(phone: phone);
+                            break;
+                        }
+
+                    case "r": // Смена области
+                        {
+                            Console.WriteLine("Введите область:");
+
+                            region = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                            await user.ChangeUserDataAsync(region: region);
+                            break;
+                        }
+
+                    case "t": // Смена города
+                        {
+                            Console.WriteLine("Введите город:");
+
+                            city = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                            await user.ChangeUserDataAsync(city: city);
+                            break;
+                        }
+
+                    case "y": // Смена улицы
+                        {
+                            Console.WriteLine("Введите улицу:");
+
+                            street = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+                            await user.ChangeUserDataAsync(street: street);
+                            break;
+                        }
+
+                    case "u": // Смена номера дома
+                        {
+                            do
+                            {
+                                Console.WriteLine("Введите номер дома:");
+                                inputNumber = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                            } while (!int.TryParse(inputNumber, out houseNumber));
+
+                            await user.ChangeUserDataAsync(houseNumber: houseNumber);
+                            break;
+                        }
+
+                    case "i": // Смена номера квартиры
+                        {
+                            do
+                            {
+                                Console.WriteLine("номер квартиры:");
+                                inputNumber = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                            } while (!int.TryParse(inputNumber, out apartmentNumber));
+
+                            await user.ChangeUserDataAsync(apartmentNumber: apartmentNumber);
+                            break;
+                        }
+
+                    default:
+                        Console.WriteLine("Некорректные данные");
+                        return false;
                         break;
-                    }
-
-                default:
-                    Console.WriteLine("Некорректные данные");
-                    break;
+                }
+                return true;
             }
+            catch (ArgumentNullException ex)
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+            catch(InvalidOperationException ex) 
+            {
+                Console.WriteLine(ex.Message);
+                return false;
+            }
+        }
+
+        static BookController GetBook(string bookName)
+        {
+            BookController bookController = null;
+            bookController = new BookController(bookName);
+            
+            return bookController;
         }
     }
 }

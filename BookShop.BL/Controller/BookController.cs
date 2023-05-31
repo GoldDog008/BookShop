@@ -57,9 +57,10 @@ namespace BookShop.BL.Controller
 
         /// <summary>
         /// Поиск книги по названию.
-        /// /// </summary>
+        /// </summary>
         /// <param name="name"></param>
         /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
         public BookController(string name)
         {
             IsNameValid(name);
