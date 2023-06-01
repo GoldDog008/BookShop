@@ -1,12 +1,14 @@
-﻿using BookShop.BL.Model;
+﻿using BookShop.BL.Controller.IValidationData;
+using BookShop.BL.Model;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace BookShop.BL.Controller
 {
     public class UserController
     {
+        protected IUserValidationData _validationData = new UserValidationController();
+
         /// <summary>
         /// Пользователь
         /// </summary>
@@ -66,7 +68,7 @@ namespace BookShop.BL.Controller
         /// <exception cref="InvalidOperationException"></exception>
         public UserController(string email)
         {
-            IsEmailValid(email);
+            IsEmailValid(email, IsNewUser);
 
             using (BookShopDBContext db = new BookShopDBContext())
             {
@@ -105,7 +107,7 @@ namespace BookShop.BL.Controller
             IsFirstNameValid(firstName);
             IsLastNameValid(lastName);
             IsRoleValid(roleId);
-            IsEmailValid(email);
+            IsEmailValid(email, IsNewUser);
 
             User = new User(firstName, lastName, roleId, email, phone);
             Residence = new ResidenceController(User, null);
@@ -214,16 +216,7 @@ namespace BookShop.BL.Controller
         /// <exception cref="InvalidOperationException"></exception>
         protected bool IsFirstNameValid(string firstName)
         {
-            if (string.IsNullOrEmpty(firstName))
-            {
-                throw new ArgumentNullException("Имя пользователя не может быть null");
-            }
-            if (firstName.Length < 3)
-            {
-                throw new InvalidOperationException("Имя пользователя не может быть меньше трёх символов");
-            }
-
-            return true;
+            return _validationData.IsFirstNameValid(firstName);
         }
 
         /// <summary>
@@ -235,16 +228,7 @@ namespace BookShop.BL.Controller
         /// <exception cref="InvalidOperationException"></exception>
         protected bool IsLastNameValid(string lastName)
         {
-            if (string.IsNullOrEmpty(lastName))
-            {
-                throw new ArgumentNullException("Фамилия пользователя не может быть null");
-            }
-            if (lastName.Length < 3)
-            {
-                throw new InvalidOperationException("Фамилия пользователя не может быть меньше трёх символов");
-            }
-
-            return true;
+            return _validationData.IsLastNameValid(lastName);
         }
 
         /// <summary>
@@ -255,20 +239,7 @@ namespace BookShop.BL.Controller
         /// <exception cref="InvalidOperationException"></exception>
         protected bool IsRoleValid(int role)
         {
-            if (role < 1)
-            {
-                throw new InvalidOperationException("Роль пользователя не может меньше 1");
-            }
-
-            using (BookShopDBContext db = new BookShopDBContext())
-            {
-                var existingRole = db.Roles.SingleOrDefault(r => r.Id == role);
-                if (existingRole == null)
-                {
-                    throw new InvalidOperationException("Роль не существует");
-                }
-            }
-            return true;
+            return _validationData.IsRoleValid(role);
         }
 
         /// <summary>
@@ -278,32 +249,9 @@ namespace BookShop.BL.Controller
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="InvalidOperationException"></exception>
-        protected bool IsEmailValid(string email)
+        protected bool IsEmailValid(string email, bool isNewUser)
         {
-            if (string.IsNullOrEmpty(email))
-            {
-                throw new ArgumentNullException("Почта пользователя не может быть null.");
-            }
-            if (!email.Contains('@'))
-            {
-                throw new InvalidOperationException("Почта пользователя обязана содержать символ '@'.");
-            }
-            if (!email.SkipWhile(x => x != '@').Contains('.'))
-            {
-                throw new InvalidOperationException("Почта пользователя обязана содержать символ '.' после символа '@'.");
-            }
-            if (IsNewUser)
-            {
-                using (BookShopDBContext db = new BookShopDBContext())
-                {
-                    var existingUser = db.Users.AsNoTracking().FirstOrDefault(u => u.Email == email);
-                    if (existingUser != null)
-                    {
-                        throw new InvalidOperationException("Данная почта уже используется");
-                    }
-                }
-            }
-            return true;
+            return _validationData.IsEmailValid(email, isNewUser);
         }
 
         /// <summary>
@@ -315,20 +263,7 @@ namespace BookShop.BL.Controller
         /// <exception cref="InvalidOperationException"></exception>
         protected bool IsPhoneValid(string phone)
         {
-            if (phone == null)
-            {
-                throw new ArgumentNullException("Номер телефона не может быть null");
-            }
-
-            Regex shortPattern = new Regex("[0-9]{10}");        //095 123 45 67
-            Regex longPattern = new Regex("[38]{2}[0-9]{10}");  //38 095 123 45 67
-
-            if (!(shortPattern.IsMatch(phone)) || !(longPattern.IsMatch(phone)))
-            {
-                throw new InvalidOperationException("Номер телефона введён некорректно.");
-            }
-
-            return true;
+            return _validationData.IsPhoneValid(phone);
         }
 
 

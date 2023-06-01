@@ -26,6 +26,18 @@ namespace BookShop.BL.Controller
             User = user ?? throw new ArgumentNullException("Пользователь не может быть null.");
             Residence = User.Residence;
         }
+
+        /// <summary>
+        /// Добавляет пользователю новое место жительства
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="region"></param>
+        /// <param name="city"></param>
+        /// <param name="street"></param>
+        /// <param name="houseNumber"></param>
+        /// <param name="apartmentNumber"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="InvalidOperationException"></exception>
         public ResidenceController(User user, string? region = null, string? city = null, string? street = null, int? houseNumber = null, int? apartmentNumber = null)
         {
             User = user ?? throw new ArgumentNullException("Пользователь не может быть null.");
@@ -104,6 +116,11 @@ namespace BookShop.BL.Controller
             }
             return false;
         }
+       
+        /// <summary>
+        /// Заполнены ли все данные о месте жительства
+        /// </summary>
+        /// <returns></returns>
         public bool IsAllDataAreFilled()
         {
             if (Residence.Region == null || 

@@ -47,6 +47,5 @@ namespace BookShop.BL.Controller
             }
             return usersData.ToString();
         }
-
     }
 }
