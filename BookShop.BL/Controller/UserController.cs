@@ -200,7 +200,6 @@ namespace BookShop.BL.Controller
                     {
                         db.SaveChanges();
                     }
-
                 }
                 return isDataChanged;
             }
@@ -265,7 +264,10 @@ namespace BookShop.BL.Controller
         {
             return _validationData.IsPhoneValid(phone);
         }
-
+        protected bool IsUserIdValid(int userId) 
+        {
+            return _validationData.IsUserIdValid(userId);
+        }
 
 
         /// <summary>
@@ -327,7 +329,7 @@ namespace BookShop.BL.Controller
             {
                 var existingBook = db.Books.AsNoTracking().SingleOrDefault(b => b.Id == bookId);
 
-                if (existingBook == null) 
+                if (existingBook == null)
                 {
                     throw new InvalidOperationException($"Книга с индексом {bookId} не найдена");
                 }
@@ -355,7 +357,7 @@ namespace BookShop.BL.Controller
             else
             {
                 throw new InvalidOperationException("Данной книги нет в корзине");
-            }        
+            }
         }
 
         /// <summary>

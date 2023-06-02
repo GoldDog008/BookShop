@@ -7,5 +7,6 @@
         bool IsRoleValid(int role);
         bool IsEmailValid(string email, bool isNewUser);
         bool IsPhoneValid(string phone);
+        bool IsUserIdValid(int userId);
     }
 }

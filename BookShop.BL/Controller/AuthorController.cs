@@ -11,7 +11,14 @@ namespace BookShop.BL.Controller
 {
     public class AuthorController
     {
+        /// <summary>
+        /// Автор
+        /// </summary>
         private Author author { get; }
+
+        /// <summary>
+        /// Книги автора
+        /// </summary>
         private ICollection<Book> Books { get; set; } = new List<Book>();
 
         /// <summary>

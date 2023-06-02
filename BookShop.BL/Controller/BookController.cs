@@ -8,7 +8,15 @@ namespace BookShop.BL.Controller
     public class BookController
     {
         private IBookValidationData _validationData = new BookValidationController();
+
+        ///<summary>
+        ///Книга
+        ///</summary>
         private Book Book { get; }
+
+        /// <summary>
+        ///Автор
+        /// </summary>
         private Author Author { get; }
 
         /// <summary>
@@ -78,39 +86,86 @@ namespace BookShop.BL.Controller
             }
         }
 
+        /// <summary>
+        ///Проверка на корректность названия книги
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         private bool IsNameValid(string name)
         {
             return _validationData.IsNameValid(name);
         }
+
+        /// <summary>
+        /// Проверка на корректность цены книги
+        /// </summary>
+        /// <param name="price"></param>
+        /// <returns></returns>
         private bool IsPriceValid(decimal price)
         {
             return _validationData.IsPriceValid(price);
         }
+
+        /// <summary>
+        /// Проверка на корректность количества книг
+        /// </summary>
+        /// <param name="count"></param>
+        /// <returns></returns>
         private bool IsCountValid(int count)
         {
             return _validationData.IsCountValid(count);
         }
+
+        /// <summary>
+        /// Проверка на корректность автора
+        /// </summary>
+        /// <param name="authorId"></param>
+        /// <returns></returns>
         private bool IsAuthorIdValid(int? authorId)
         {
             return _validationData.IsAuthorIdValid(authorId);
         }
 
+        /// <summary>
+        /// Получить Id книги
+        /// </summary>
+        /// <returns></returns>
         public int GetId()
         {
             return Book.Id;
         }
+
+        /// <summary>
+        /// Получить описание книги
+        /// </summary>
+        /// <returns></returns>
         public string GetDescription()
         {
             return Book?.Description ?? "Нет данных";
         }
+
+        /// <summary>
+        /// Получить доступное количество книг
+        /// </summary>
+        /// <returns></returns>
         public int GetCount()
         {
             return Book.Count;
         }
+
+        /// <summary>
+        /// Получить цену книги
+        /// </summary>
+        /// <returns></returns>
         public decimal GetPrice()
         {
             return Book.Price;
         }
+
+        /// <summary>
+        /// Получить авторап книги
+        /// </summary>
+        /// <returns></returns>
         public string GetAuthor()
         {
             return Book?.Author?.Name ?? "Нет данных";
@@ -120,7 +175,11 @@ namespace BookShop.BL.Controller
             return Book.ToString();
         }
 
-        public static string GetAllBook()
+        /// <summary>
+        /// Получить информацию о всех книгах
+        /// </summary>
+        /// <returns></returns>
+        public static string GetAllBookInformation()
         {
             string booksData = "";
             using (BookShopDBContext db = new BookShopDBContext())
@@ -138,6 +197,11 @@ namespace BookShop.BL.Controller
             return booksData;
         }
 
+        /// <summary>
+        /// Изменить автора книги
+        /// </summary>
+        /// <param name="authorId"></param>
+        /// <param name="bookId"></param>
         public void ChangeAuthor(int authorId, int bookId)
         {
             using (BookShopDBContext db = new BookShopDBContext())

@@ -1,8 +1,4 @@
 ﻿using BookShop.BL.Controller;
-using BookShop.BL.Model;
-using Microsoft.EntityFrameworkCore;
-using System.Configuration;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace BookShop
@@ -12,15 +8,17 @@ namespace BookShop
         static async Task Main(string[] args)
         {
             Console.WriteLine("Добро пожаловать в МОЙ книжный магазин у которого ещё нет названия)");
+
             //canek.kryt.12@gmail.com WarAndPeace  Данте Алигьери                                     
-            //asdqwert@mail.ru                                  
+            //asdqwert@mail.ru
+
             UserController controller = null;
 
             #region Вход в существующий аккаунт или создание нового
             do
             {
                 Console.WriteLine("Введите Email:");
-                var email = Console.ReadLine();
+                var email = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
 
                 try
                 {
@@ -79,13 +77,10 @@ namespace BookShop
 
                 switch (choice.ToLower())
                 {
-                    //case "b" when controller is AdminController:
-                    //    //Console.WriteLine(controller.GetA);
-                    //    break;
-
+                    #region Выбор для обычного пользователя
                     case "q": // Посмотреть список всех книг
                         {
-                            var allBooks = BookController.GetAllBook();
+                            var allBooks = BookController.GetAllBookInformation();
                             Console.WriteLine(allBooks);
                             break;
                         }
@@ -99,7 +94,7 @@ namespace BookShop
                             {
                                 book = new BookController(bookName);
                             }
-                            catch(ArgumentNullException ex)
+                            catch (ArgumentNullException ex)
                             {
                                 Console.WriteLine(ex.Message);
                                 break;
@@ -127,7 +122,7 @@ namespace BookShop
                                 authorBooks = AuthorController.GetAllBooksByAuthor(name);
                                 Console.WriteLine(authorBooks);
                             }
-                            catch(ArgumentNullException ex)
+                            catch (ArgumentNullException ex)
                             {
                                 Console.WriteLine(ex.Message);
                                 break;
@@ -186,7 +181,7 @@ namespace BookShop
                                 inputCount = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
 
                             } while (!int.TryParse(inputCount, out bookCount));
-                          
+
                             try
                             {
                                 book = GetBook(bookName);
@@ -197,7 +192,7 @@ namespace BookShop
                                 Console.WriteLine(ex.Message);
                                 break;
                             }
-                            catch(InvalidOperationException ex) 
+                            catch (InvalidOperationException ex)
                             {
                                 Console.WriteLine(ex.Message);
                                 break;
@@ -234,7 +229,7 @@ namespace BookShop
                                 Console.WriteLine(ex.Message);
                                 break;
                             }
-                            
+
                             Console.WriteLine("Книга была успешна удалена из корззины");
                             break;
                         }
@@ -253,6 +248,141 @@ namespace BookShop
                             Console.WriteLine("Покупка успешна");
                             break;
                         }
+                    #endregion
+
+                    #region Выбор для админа
+                    case "z" when controller is AdminController admin: // Изменить пользователю права
+                        {
+                            int userId, inputId;
+                            string inputData;
+
+                            do
+                            {
+                                Console.WriteLine("Введите id пользователя, которому нужно поменять роль");
+                                inputData = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                            } while (!int.TryParse(inputData, out userId));
+
+                            do
+                            {
+                                Console.WriteLine("Введите новый id роли для пользователя");
+                                inputData = Console.ReadLine() ?? throw new ArgumentNullException("Ввод не может быть null");
+
+                            } while (!int.TryParse(inputData, out inputId));
+
+                            try
+                            {
+                                admin.ChangeUserRole(admin.GetUser(userId), inputId);
+                            }
+                            catch (ArgumentNullException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
+                            }
+
+                            Console.WriteLine("Роль успешно изменена");
+                            break;
+                        }
+                    case "x" when controller is AdminController admin: // Добавить новую книгу
+                        {
+                            var bookData = InputDataForNewBook();
+
+                            try
+                            {
+                                admin.AddNewBook(bookData.Item1, // Название книги
+                                             bookData.Item2, // Цена
+                                             bookData.Item3, // Количество
+                                             bookData.Item4); // Описание
+                            }
+                            catch (ArgumentNullException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
+                            }
+
+                            break;
+                        }
+                    case "c" when controller is AdminController admin: //Редактировать существующую книгу
+                        {
+                            Console.WriteLine("Эта возможность разрабатывается(нет)");
+                            break;
+                        }
+                    case "v" when controller is AdminController admin: // Удалить пользователя
+                        {
+                            int userId;
+                            string inputData;
+
+                            do
+                            {
+                                Console.WriteLine("Введите Id пользователя, которого нужно удалить");
+                                inputData = Console.ReadLine();
+
+                            } while (!int.TryParse(inputData, out userId));
+
+                            try
+                            {
+                                await admin.DeleteUserAsync(userId);
+                            }
+                            catch (ArgumentNullException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
+                            }
+
+                            Console.WriteLine("Удаление пользователя успешно");
+                            break;
+                        }
+                    case "b" when controller is AdminController admin: // Посмотреть весь список пользователей
+                        {
+                            Console.WriteLine(admin.GetAllUser());
+                            break;
+                        }
+                    case "n" when controller is AdminController admin: // Получить историю продаж пользователя
+                        {
+                            int userId;
+                            string inputData;
+
+                            do
+                            {
+                                Console.WriteLine("Введите Id пользователя");
+                                inputData = Console.ReadLine();
+
+                            } while (!int.TryParse(inputData, out userId));
+
+                            try
+                            {
+                                Console.WriteLine(await admin.GetUserSalesHistoryAsync(userId));
+                            }
+                            catch (ArgumentNullException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                Console.WriteLine(ex.Message);
+                                break;
+                            }
+
+                            break;
+                        }
+                    #endregion
+
                     default:
                         Console.WriteLine("Некорректные данные");
                         continue;
@@ -263,14 +393,14 @@ namespace BookShop
         /// <summary>
         /// Ввод данных для нового пользователя
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Имя, фамилия, телефон</returns>
         static (string, string, string?) InputDataForNewUser()
         {
             Console.Write("Введите имя пользователя: ");
-            var FirstName = Console.ReadLine();
+            string FirstName = Console.ReadLine();
 
             Console.Write("Введите фамилию пользователя: ");
-            var LastName = Console.ReadLine();
+            string LastName = Console.ReadLine();
 
             string? Phone = null;
             do
@@ -281,7 +411,7 @@ namespace BookShop
                 Regex shortPattern = new Regex("[0-9]{10}");
                 Regex longPattern = new Regex("[38]{2}[0-9]{10}");
 
-                if (Phone == "" || Phone == " ")
+                if (Phone == "")
                 {
                     Phone = null;
                     break;
@@ -298,6 +428,42 @@ namespace BookShop
             } while (true);
 
             return (FirstName, LastName, Phone);
+        }
+
+        /// <summary>
+        /// Ввод данных для новой книги
+        /// </summary>
+        /// <returns>Название книги, цена, количество, описание</returns>
+        static (string, int, int, string?) InputDataForNewBook()
+        {
+            int price, count, authorId;
+            string inputData;
+
+            Console.Write("Введите название книги: ");
+            string name = Console.ReadLine();
+
+            do
+            {
+                Console.Write("Введите цену книги: ");
+                inputData = Console.ReadLine();
+
+            } while (!int.TryParse(inputData, out price));
+
+            do
+            {
+                Console.Write("Введите количество книг: ");
+                inputData = Console.ReadLine();
+
+            } while (!int.TryParse(inputData, out count));
+
+            Console.Write("Введите описание книги: ");
+            string? description = Console.ReadLine();
+
+            if (description == "")
+            {
+                description = null;
+            }
+            return (name, price, count, description);
         }
 
         /// <summary>
@@ -457,7 +623,6 @@ namespace BookShop
                     default:
                         Console.WriteLine("Некорректные данные");
                         return false;
-                        break;
                 }
                 return true;
             }
@@ -466,7 +631,7 @@ namespace BookShop
                 Console.WriteLine(ex.Message);
                 return false;
             }
-            catch(InvalidOperationException ex) 
+            catch (InvalidOperationException ex)
             {
                 Console.WriteLine(ex.Message);
                 return false;
@@ -475,10 +640,7 @@ namespace BookShop
 
         static BookController GetBook(string bookName)
         {
-            BookController bookController = null;
-            bookController = new BookController(bookName);
-            
-            return bookController;
+            return new BookController(bookName);
         }
     }
 }

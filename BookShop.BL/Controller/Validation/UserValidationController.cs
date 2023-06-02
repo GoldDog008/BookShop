@@ -1,6 +1,7 @@
 ﻿using BookShop.BL.Controller.IValidationData;
 using BookShop.BL.Model;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 using System.Text.RegularExpressions;
 
 
@@ -91,6 +92,23 @@ namespace BookShop.BL.Controller
                 if (existingRole == null)
                 {
                     throw new InvalidOperationException("Роль не существует");
+                }
+            }
+            return true;
+        }
+        public bool IsUserIdValid(int userId)
+        {
+            if (userId < 1)
+            {
+                throw new InvalidOperationException("Id пользователя не может меньше 1");
+            }
+
+            using (BookShopDBContext db = new BookShopDBContext())
+            {
+                var existingRole = db.Users.SingleOrDefault(u => u.Id == userId);
+                if (existingRole == null)
+                {
+                    throw new InvalidOperationException("Пользователь не существует");
                 }
             }
             return true;
